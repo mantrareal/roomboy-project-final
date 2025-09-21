@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Administrativo - México Destination Club</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* CSS COMPLETO Y FUNCIONAL */
+        :root {
+            --primary-color: #E91E63; --secondary-color: #3f51b5; --background-color: #f4f7fc;
+            --card-background: #ffffff; --text-color: #333; --text-light: #666;
+            --border-color: #e0e0e0; --shadow: 0 4px 20px rgba(0, 0, 0, 0.08 );
+        }
+        body { background-color: var(--background-color); font-family: 'Segoe UI', sans-serif; margin: 0; }
+        .admin-container { max-width: 1600px; margin: 2rem auto; padding: 0 2rem; }
+        .admin-header { background: var(--card-background); padding: 1.5rem 2rem; border-radius: 15px; box-shadow: var(--shadow); margin-bottom: 2rem; }
+        .header-content { display: flex; justify-content: space-between; align-items: center; }
+        .logo-section h1 { color: var(--primary-color); font-size: 1.8rem; margin: 0; }
+        .logo-section p { color: var(--text-light); margin: 0; }
+        .user-info { display: flex; align-items: center; gap: 1.5rem; }
+        .logout-btn { background: transparent; border: 2px solid var(--primary-color); color: var(--primary-color); padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; transition: all 0.3s; }
+        .logout-btn:hover { background: var(--primary-color); color: white; }
+        .admin-nav { display: flex; gap: 0.5rem; margin-bottom: 2rem; }
+        .nav-tab { padding: 0.8rem 1.5rem; border: none; background: var(--card-background); color: var(--text-light); font-size: 1rem; font-weight: 600; border-radius: 10px 10px 0 0; cursor: pointer; border-bottom: 3px solid transparent; }
+        .nav-tab.active { color: var(--primary-color); border-bottom: 3px solid var(--primary-color); }
+        .admin-content .tab-content { display: none; }
+        .admin-content .tab-content.active { display: block; }
+        .tab-content h2 { font-size: 1.5rem; margin-bottom: 1.5rem; color: var(--secondary-color); }
+        .charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 2rem; }
+        .chart-container { background: var(--card-background); padding: 2rem; border-radius: 15px; box-shadow: var(--shadow); }
+        .gallery-filters { background: var(--card-background); padding: 1.5rem; border-radius: 15px; margin-bottom: 2rem; display: flex; flex-wrap: wrap; align-items: center; gap: 1.5rem; box-shadow: var(--shadow); }
+        .filter-group { display: flex; flex-direction: column; gap: 0.5rem; }
+        .filter-group label { font-size: 0.9rem; font-weight: 600; color: var(--text-light); }
+        .filter-group select, .filter-group input { padding: 0.6rem; border: 1px solid var(--border-color); border-radius: 8px; font-size: 1rem; }
+        .btn-primary, .btn-secondary { padding: 0.7rem 1.5rem; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; border: none; transition: all 0.3s; align-self: flex-end; }
+        .btn-primary { background-color: var(--primary-color); color: white; }
+        .btn-secondary { background-color: #e0e0e0; color: var(--text-color); }
+        .photo-gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; }
+        .photo-card { background: var(--card-background); border-radius: 15px; overflow: hidden; box-shadow: var(--shadow); }
+        .photo-card img { width: 100%; height: 200px; object-fit: cover; cursor: pointer; }
+        .photo-details { padding: 1rem; }
+        .status-label { padding: 0.2rem 0.6rem; border-radius: 12px; font-size: 0.8rem; font-weight: 600; color: white; text-transform: capitalize; }
+        .status-approved { background-color: #4CAF50; } .status-pending { background-color: #FF9800; } .status-rejected { background-color: #F44336; }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <header class="admin-header">
+            <div class="header-content">
+                <div class="logo-section"><h1>🏨 México Destination Club</h1><p>Panel Administrativo</p></div>
+                <div class="user-info"><span id="adminName">Admin</span><button id="logoutButton" class="logout-btn">🚪 Salir</button></div>
+            </div>
+        </header>
+        <nav class="admin-nav">
+            <button class="nav-tab active" data-tab="dashboard">📊 Dashboard</button>
+            <button class="nav-tab" data-tab="gallery">📸 Galería</button>
+        </nav>
+        <main class="admin-content">
+            <div id="dashboard-content" class="tab-content active">
+                <h2>Dashboard Principal</h2>
+                <div class="charts-grid">
+                    <div class="chart-container"><h3>📈 Cumplimiento Diario (Ejemplo)</h3><canvas id="dailyComplianceChart"></canvas></div>
+                </div>
+            </div>
+            <div id="gallery-content" class="tab-content">
+                <h2>Galería de Fotos</h2>
+                <div class="gallery-filters">
+                    <div class="filter-group"><label for="employeeFilter">Empleado:</label><select id="employeeFilter"><option value="all">Todos</option></select></div>
+                    <div class="filter-group"><label for="startDate">Desde:</label><input type="date" id="startDate"></div>
+                    <div class="filter-group"><label for="endDate">Hasta:</label><input type="date" id="endDate"></div>
+                    <button id="applyFiltersBtn" class="btn-primary">🔍 Aplicar</button>
+                    <button id="clearFiltersBtn" class="btn-secondary">Limpiar</button>
+                </div>
+                <div id="photoGallery" class="photo-gallery"><p>Cargando...</p></div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // JAVASCRIPT COMPLETO Y FUNCIONAL
+        document.addEventListener('DOMContentLoaded', () => {
+            const SUPABASE_URL = 'https://depkkpxkbpgbvzylcdcn.supabase.co';
+            const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRlcGtrcHhrYnBnYnZ6eWxjZGNuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgzNzEzNjgsImV4cCI6MjA3Mzk0NzM2OH0.n8CDtIA-If4dSjLuRRG5N0y1IolPSMx44qD7Y3odV28';
+            const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY );
+
+            // --- Autenticación y Sesión ---
+            const session = localStorage.getItem('userSession');
+            if (!session) { window.location.href = 'index.html'; return; }
+            const currentUser = JSON.parse(session);
+            document.getElementById('adminName').textContent = currentUser.full_name || 'Admin';
+            document.getElementById('logoutButton').addEventListener('click', () => {
+                localStorage.removeItem('userSession');
+                window.location.href = 'index.html';
+            });
+
+            // --- Navegación por Pestañas ---
+            const tabs = document.querySelectorAll('.nav-tab');
+            const tabContents = document.querySelectorAll('.tab-content');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    tabContents.forEach(c => c.classList.remove('active'));
+                    document.getElementById(`${tab.dataset.tab}-content`).classList.add('active');
+                    if (tab.dataset.tab === 'gallery') { loadGalleryPhotos(); populateEmployeeFilter(); }
+                    if (tab.dataset.tab === 'dashboard') { loadDashboardCharts(); }
+                });
+            });
+
+            // --- Lógica de la Galería ---
+            const gallery = document.getElementById('photoGallery');
+            const employeeFilter = document.getElementById('employeeFilter');
+            const startDateInput = document.getElementById('startDate');
+            const endDateInput = document.getElementById('endDate');
+            const applyFiltersBtn = document.getElementById('applyFiltersBtn');
+            const clearFiltersBtn = document.getElementById('clearFiltersBtn');
+
+            async function loadGalleryPhotos() {
+                gallery.innerHTML = '<p>Cargando fotos...</p>';
+                try {
+                    let query = supabase.from('task_photos').select(`*, user_profiles(full_name)`).order('created_at', { ascending: false });
+                    if (employeeFilter.value !== 'all') query = query.eq('user_id', employeeFilter.value);
+                    if (startDateInput.value) query = query.gte('created_at', new Date(startDateInput.value).toISOString());
+                    if (endDateInput.value) {
+                        const end = new Date(endDateInput.value); end.setDate(end.getDate() + 1);
+                        query = query.lt('created_at', end.toISOString());
+                    }
+                    const { data, error } = await query.limit(100);
+                    if (error) throw error;
+                    if (data.length === 0) { gallery.innerHTML = '<p>No se encontraron fotos con los filtros seleccionados.</p>'; return; }
+                    gallery.innerHTML = data.map(photo => `
+                        <div class="photo-card">
+                            <img src="${photo.photo_url}" alt="Foto" onclick="window.open('${photo.photo_url}', '_blank')">
+                            <div class="photo-details">
+                                <p><strong>Empleado:</strong> ${photo.user_profiles ? photo.user_profiles.full_name : 'Desconocido'}</p>
+                                <p><strong>Fecha:</strong> ${new Date(photo.created_at).toLocaleString()}</p>
+                                <p><strong>Estado:</strong> <span class="status-label status-${photo.status || 'pending'}">${photo.status || 'pendiente'}</span></p>
+                            </div>
+                        </div>`).join('');
+                } catch (error) { gallery.innerHTML = '<p style="color: red;">Error al cargar las fotos.</p>'; }
+            }
+
+            async function populateEmployeeFilter() {
+                if (employeeFilter.options.length > 1) return;
+                try {
+                    const { data, error } = await supabase.from('user_profiles').select('user_id, full_name').eq('role', 'roomboy').order('full_name');
+                    if (error) throw error;
+                    data.forEach(emp => {
+                        const option = document.createElement('option');
+                        option.value = emp.user_id;
+                        option.textContent = emp.full_name;
+                        employeeFilter.appendChild(option);
+                    });
+                } catch (error) { console.error('Error cargando empleados:', error); }
+            }
+
+            applyFiltersBtn.addEventListener('click', loadGalleryPhotos);
+            clearFiltersBtn.addEventListener('click', () => {
+                employeeFilter.value = 'all'; startDateInput.value = ''; endDateInput.value = '';
+                loadGalleryPhotos();
+            });
+
+            // --- Lógica del Dashboard ---
+            function loadDashboardCharts() {
+                const ctx = document.getElementById('dailyComplianceChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'],
+                        datasets: [{ label: 'Fotos Subidas (Ejemplo)', data: [12, 19, 3, 5, 2, 3, 9], borderColor: '#E91E63', tension: 0.1 }]
+                    }
+                });
+            }
+            
+            // --- Carga Inicial ---
+            loadDashboardCharts();
+        });
+    </script>
+</body>
+</html>

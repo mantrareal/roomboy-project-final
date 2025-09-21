@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Room Boy App - MDC</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        /* CSS COMPLETO Y FUNCIONAL PARA ROOMBOY APP */
+        :root {
+            --primary-color: #E91E63; --primary-dark: #c2185b; --background-color: #f0f2f5;
+            --card-background: #ffffff; --text-color: #333; --text-light: #666;
+            --border-color: #e0e0e0; --shadow: 0 4px 12px rgba(0, 0, 0, 0.1 );
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: var(--background-color); color: var(--text-color); }
+        .app-container { max-width: 500px; margin: 0 auto; padding: 1rem; }
+        .app-header { background: var(--card-background); padding: 1rem; border-radius: 15px; box-shadow: var(--shadow); margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; }
+        .header-welcome h1 { font-size: 1.2rem; margin: 0; }
+        .header-welcome p { color: var(--text-light); font-size: 0.9rem; }
+        .logout-btn { background: transparent; border: 2px solid var(--primary-color); color: var(--primary-color); padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; font-weight: 600; }
+        .card { background: var(--card-background); padding: 1.5rem; border-radius: 15px; box-shadow: var(--shadow); margin-bottom: 1.5rem; }
+        .card h2 { font-size: 1.1rem; margin-bottom: 1rem; color: var(--primary-dark); }
+        #messageContainer { text-align: center; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; font-weight: 600; display: none; }
+        #messageContainer.success { background: #e8f5e9; color: #2e7d32; display: block; }
+        #messageContainer.error { background: #ffebee; color: #c62828; display: block; }
+        .counter-display { text-align: center; font-size: 2.5rem; font-weight: bold; color: var(--primary-color); margin-bottom: 0.5rem; }
+        .counter-label { text-align: center; color: var(--text-light); margin-bottom: 1rem; }
+        .progress-bar { background: #e0e0e0; border-radius: 10px; height: 10px; overflow: hidden; }
+        .progress-fill { background: var(--primary-color); height: 100%; width: 0%; transition: width 0.5s ease; }
+        .input-group { margin-bottom: 1rem; }
+        .input-group label { display: block; margin-bottom: 0.5rem; font-weight: 600; }
+        .input-group input { width: 100%; padding: 0.8rem; border: 1px solid var(--border-color); border-radius: 8px; font-size: 1rem; }
+        .upload-area { border: 3px dashed var(--primary-color); border-radius: 12px; padding: 2rem; text-align: center; cursor: pointer; margin-bottom: 1rem; }
+        .upload-area.dragover { background: rgba(233, 30, 99, 0.05); }
+        .upload-icon { font-size: 2.5rem; }
+        #photoPreview { max-width: 100%; border-radius: 8px; margin-top: 1rem; display: none; }
+        .upload-btn { width: 100%; padding: 1rem; background: var(--primary-color); color: white; border: none; border-radius: 8px; font-size: 1.1rem; cursor: pointer; font-weight: 600; }
+        .upload-btn:disabled { background: #ccc; cursor: not-allowed; }
+        .upload-btn.loading { display: flex; justify-content: center; align-items: center; gap: 0.5rem; }
+        .spinner { width: 20px; height: 20px; border: 3px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .photo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .photo-item img { width: 100%; height: 120px; object-fit: cover; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+        .photo-item p { text-align: center; margin-top: 0.5rem; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <header class="app-header">
+            <div class="header-welcome">
+                <h1 id="welcomeMessage">¡Hola!</h1>
+                <p>App de Verificación</p>
+            </div>
+            <button id="logoutButton" class="logout-btn">Salir</button>
+        </header>
+
+        <div id="messageContainer"></div>
+
+        <div class="card">
+            <h2>Tu Progreso de Hoy</h2>
+            <div id="photoCounter" class="counter-display">0/2</div>
+            <p class="counter-label">Fotos subidas</p>
+            <div class="progress-bar">
+                <div id="progressFill" class="progress-fill"></div>
+            </div>
+        </div>
+
+        <div id="uploadCard" class="card">
+            <h2>📸 Subir Nueva Foto</h2>
+            <div class="input-group">
+                <label for="tableNumber">Número de Mesa</label>
+                <input type="number" id="tableNumber" placeholder="Ej: 1 a 150" min="1" max="150">
+            </div>
+            <div class="upload-area" id="uploadArea">
+                <div class="upload-icon">📷</div>
+                <p>Toca para tomar o seleccionar foto</p>
+            </div>
+            <input type="file" id="photoInput" accept="image/*" capture="environment" style="display: none;">
+            <img id="photoPreview" alt="Vista previa de la foto">
+            <button id="uploadBtn" class="upload-btn" disabled>Subir Foto</button>
+        </div>
+
+        <div class="card">
+            <h2>📅 Tus Fotos de Hoy</h2>
+            <div id="todayPhotoGrid" class="photo-grid">
+                <p>Aún no has subido fotos hoy.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // JAVASCRIPT COMPLETO Y FUNCIONAL PARA ROOMBOY APP
+        document.addEventListener('DOMContentLoaded', () => {
+            const SUPABASE_URL = 'https://depkkpxkbpgbvzylcdcn.supabase.co';
+            const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRlcGtrcHhrYnBnYnZ6eWxjZGNuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgzNzEzNjgsImV4cCI6MjA3Mzk0NzM2OH0.n8CDtIA-If4dSjLuRRG5N0y1IolPSMx44qD7Y3odV28';
+            const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY );
+
+            // --- Elementos del DOM ---
+            const welcomeMessage = document.getElementById('welcomeMessage');
+            const logoutButton = document.getElementById('logoutButton');
+            const photoCounter = document.getElementById('photoCounter');
+            const progressFill = document.getElementById('progressFill');
+            const uploadCard = document.getElementById('uploadCard');
+            const tableNumberInput = document.getElementById('tableNumber');
+            const uploadArea = document.getElementById('uploadArea');
+            const photoInput = document.getElementById('photoInput');
+            const photoPreview = document.getElementById('photoPreview');
+            const uploadBtn = document.getElementById('uploadBtn');
+            const todayPhotoGrid = document.getElementById('todayPhotoGrid');
+            const messageContainer = document.getElementById('messageContainer');
+
+            let currentUser = null;
+            let selectedFile = null;
+
+            // --- Funciones ---
+            function showMessage(text, type = 'success') {
+                messageContainer.textContent = text;
+                messageContainer.className = type;
+                setTimeout(() => { messageContainer.className = ''; }, 4000);
+            }
+
+            function checkUploadButtonState() {
+                uploadBtn.disabled = !(selectedFile && tableNumberInput.value);
+            }
+
+            async function updateUI() {
+                const todayPhotos = await getTodayPhotos();
+                const count = todayPhotos.length;
+                photoCounter.textContent = `${count}/2`;
+                progressFill.style.width = `${(count / 2) * 100}%`;
+
+                if (count >= 2) {
+                    uploadCard.style.display = 'none';
+                    if (count === 2) showMessage('¡Felicidades! Has completado tus tareas de hoy.');
+                } else {
+                    uploadCard.style.display = 'block';
+                }
+
+                if (count > 0) {
+                    todayPhotoGrid.innerHTML = todayPhotos.map(photo => `
+                        <div class="photo-item">
+                            <img src="${photo.photo_url}" alt="Foto de mesa ${photo.table_number}">
+                            <p>Mesa ${photo.table_number}</p>
+                        </div>
+                    `).join('');
+                } else {
+                    todayPhotoGrid.innerHTML = '<p>Aún no has subido fotos hoy.</p>';
+                }
+            }
+
+            async function getTodayPhotos() {
+                const today = new Date();
+                const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate()).toISOString();
+                const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1).toISOString();
+
+                const { data, error } = await supabase
+                    .from('task_photos')
+                    .select('*')
+                    .eq('user_id', currentUser.id)
+                    .gte('created_at', startOfDay)
+                    .lt('created_at', endOfDay);
+                
+                if (error) { console.error('Error fetching photos:', error); return []; }
+                return data;
+            }
+
+            async function handleUpload() {
+                if (uploadBtn.disabled) return;
+
+                uploadBtn.disabled = true;
+                uploadBtn.innerHTML = '<div class="spinner"></div> Subiendo...';
+
+                try {
+                    const fileName = `${currentUser.id}_${Date.now()}`;
+                    const { error: uploadError } = await supabase.storage
+                        .from('task-photos')
+                        .upload(fileName, selectedFile);
+                    
+                    if (uploadError) throw uploadError;
+
+                    const { data: urlData } = supabase.storage.from('task-photos').getPublicUrl(fileName);
+
+                    const { error: dbError } = await supabase.from('task_photos').insert({
+                        user_id: currentUser.id,
+                        table_number: tableNumberInput.value,
+                        photo_url: urlData.publicUrl,
+                        status: 'pending'
+                    });
+
+                    if (dbError) throw dbError;
+
+                    showMessage('¡Foto subida con éxito!');
+                    // Resetear formulario
+                    selectedFile = null;
+                    photoInput.value = '';
+                    photoPreview.style.display = 'none';
+                    tableNumberInput.value = '';
+                    await updateUI();
+
+                } catch (error) {
+                    showMessage(`Error al subir: ${error.message}`, 'error');
+                } finally {
+                    uploadBtn.disabled = false;
+                    uploadBtn.innerHTML = 'Subir Foto';
+                    checkUploadButtonState();
+                }
+            }
+
+            // --- Inicialización ---
+            function initializeApp() {
+                const session = localStorage.getItem('userSession');
+                if (!session) { window.location.href = 'index.html'; return; }
+                
+                currentUser = JSON.parse(session);
+
+                if (currentUser.role !== 'roomboy') {
+                    alert('Acceso denegado. Esta app es solo para Room Boys.');
+                    localStorage.removeItem('userSession');
+                    window.location.href = 'index.html';
+                    return;
+                }
+
+                welcomeMessage.textContent = `¡Hola, ${currentUser.full_name.split(' ')[0]}!`;
+                updateUI();
+
+                // --- Event Listeners ---
+                logoutButton.addEventListener('click', () => {
+                    localStorage.removeItem('userSession');
+                    window.location.href = 'index.html';
+                });
+
+                uploadArea.addEventListener('click', () => photoInput.click());
+                tableNumberInput.addEventListener('input', checkUploadButtonState);
+                uploadBtn.addEventListener('click', handleUpload);
+
+                photoInput.addEventListener('change', (e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                        if (file.size > 5 * 1024 * 1024) {
+                            showMessage('La imagen es muy grande (máx 5MB).', 'error');
+                            return;
+                        }
+                        selectedFile = file;
+                        photoPreview.src = URL.createObjectURL(file);
+                        photoPreview.style.display = 'block';
+                        checkUploadButtonState();
+                    }
+                });
+            }
+
+            initializeApp();
+        });
+    </script>
+</body>
+</html>

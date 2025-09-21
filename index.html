@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - México Destination Club</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        /* CSS para el Login, ahora dentro del HTML */
+        body {
+            background: linear-gradient(135deg, #E91E63, #FF1493 );
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0;
+        }
+        .login-container { text-align: center; }
+        .login-box { background: white; padding: 3rem; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); width: 400px; max-width: 90%; }
+        .login-box .logo { font-size: 1.5rem; font-weight: bold; color: #E91E63; margin-bottom: 1rem; }
+        .login-box h2 { margin-bottom: 0.5rem; }
+        .login-box p { color: #666; margin-bottom: 2rem; }
+        .input-group { text-align: left; margin-bottom: 1.5rem; }
+        .input-group label { display: block; margin-bottom: 0.5rem; font-weight: 600; }
+        .input-group input { width: 100%; padding: 0.8rem; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; }
+        #loginButton { width: 100%; padding: 1rem; background: #E91E63; color: white; border: none; border-radius: 8px; font-size: 1.1rem; cursor: pointer; transition: background 0.3s; }
+        #loginButton:hover { background: #c2185b; }
+        .error-message { color: red; margin-top: 1rem; height: 20px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-box">
+            <div class="logo">🏨 México Destination Club</div>
+            <h2>Bienvenido</h2>
+            <p>Por favor, inicia sesión para continuar</p>
+            <form id="loginForm">
+                <div class="input-group">
+                    <label for="email">Correo Electrónico</label>
+                    <input type="email" id="email" required>
+                </div>
+                <div class="input-group">
+                    <label for="password">Contraseña</label>
+                    <input type="password" id="password" required>
+                </div>
+                <button type="submit" id="loginButton">Entrar</button>
+                <p id="errorMessage" class="error-message"></p>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // JavaScript para el Login, ahora dentro del HTML
+        document.addEventListener('DOMContentLoaded', () => {
+            const SUPABASE_URL = 'https://depkkpxkbpgbvzylcdcn.supabase.co';
+            const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRlcGtrcHhrYnBnYnZ6eWxjZGNuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgzNzEzNjgsImV4cCI6MjA3Mzk0NzM2OH0.n8CDtIA-If4dSjLuRRG5N0y1IolPSMx44qD7Y3odV28';
+            const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY );
+
+            const loginForm = document.getElementById('loginForm');
+            const errorMessage = document.getElementById('errorMessage');
+
+            loginForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                errorMessage.textContent = '';
+                try {
+                    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+                        email: document.getElementById('email').value,
+                        password: document.getElementById('password').value,
+                    });
+                    if (authError) throw authError;
+
+                    const { data: profileData, error: profileError } = await supabase
+                        .from('user_profiles')
+                        .select('role, full_name')
+                        .eq('user_id', authData.user.id)
+                        .single();
+                    
+                    if (profileError || !profileData) {
+                        throw new Error('Este usuario no tiene un perfil asignado.');
+                    }
+
+                    const sessionData = {
+                        id: authData.user.id,
+                        email: authData.user.email,
+                        role: profileData.role,
+                        full_name: profileData.full_name
+                    };
+                    localStorage.setItem('userSession', JSON.stringify(sessionData));
+
+                    if (profileData.role === 'admin') {
+                        window.location.href = 'admin.html';
+                    } else {
+                        // Aquí iría la redirección para el roomboy
+                        alert('Login de Room Boy exitoso. Página en construcción.');
+                    }
+                } catch (error) {
+                    errorMessage.textContent = error.message;
+                }
+            });
+        });
+    </script>
+</body>
+</html>
