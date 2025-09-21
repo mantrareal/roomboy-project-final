@@ -6,99 +6,446 @@
     <title>Login - México Destination Club</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        /* CSS para el Login, ahora dentro del HTML */
+        /* CSS para el Login */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            background: linear-gradient(135deg, #E91E63, #FF1493 );
+            background: linear-gradient(135deg, #E91E63, #FF1493);
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            font-family: 'Segoe UI', sans-serif;
-            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 20px;
         }
-        .login-container { text-align: center; }
-        .login-box { background: white; padding: 3rem; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); width: 400px; max-width: 90%; }
-        .login-box .logo { font-size: 1.5rem; font-weight: bold; color: #E91E63; margin-bottom: 1rem; }
-        .login-box h2 { margin-bottom: 0.5rem; }
-        .login-box p { color: #666; margin-bottom: 2rem; }
-        .input-group { text-align: left; margin-bottom: 1.5rem; }
-        .input-group label { display: block; margin-bottom: 0.5rem; font-weight: 600; }
-        .input-group input { width: 100%; padding: 0.8rem; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; }
-        #loginButton { width: 100%; padding: 1rem; background: #E91E63; color: white; border: none; border-radius: 8px; font-size: 1.1rem; cursor: pointer; transition: background 0.3s; }
-        #loginButton:hover { background: #c2185b; }
-        .error-message { color: red; margin-top: 1rem; height: 20px; font-weight: bold; }
+
+        .login-container {
+            text-align: center;
+            width: 100%;
+            max-width: 450px;
+        }
+
+        .login-box {
+            background: white;
+            padding: 3rem;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #E91E63, #FF1493);
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #E91E63;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .login-box h2 {
+            margin-bottom: 0.5rem;
+            color: #333;
+            font-size: 1.5rem;
+        }
+
+        .login-box p {
+            color: #666;
+            margin-bottom: 2rem;
+            font-size: 0.95rem;
+        }
+
+        .input-group {
+            text-align: left;
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #333;
+            font-size: 0.9rem;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #e1e1e1;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: #fafafa;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #E91E63;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(233, 30, 99, 0.1);
+        }
+
+        .input-group input.error {
+            border-color: #f44336;
+            background: #fff5f5;
+        }
+
+        #loginButton {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, #E91E63, #FF1493);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #loginButton:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(233, 30, 99, 0.3);
+        }
+
+        #loginButton:active {
+            transform: translateY(0);
+        }
+
+        #loginButton:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loading {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .loading::after {
+            content: '';
+            width: 20px;
+            height: 20px;
+            border: 2px solid transparent;
+            border-top: 2px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            color: #f44336;
+            margin-top: 1rem;
+            min-height: 20px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            text-align: center;
+            padding: 0.5rem;
+            border-radius: 6px;
+            background: rgba(244, 67, 54, 0.1);
+            border: 1px solid rgba(244, 67, 54, 0.2);
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .success-message {
+            color: #4caf50;
+            margin-top: 1rem;
+            min-height: 20px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            text-align: center;
+            padding: 0.5rem;
+            border-radius: 6px;
+            background: rgba(76, 175, 80, 0.1);
+            border: 1px solid rgba(76, 175, 80, 0.2);
+            display: none;
+        }
+
+        .success-message.show {
+            display: block;
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            .login-box {
+                padding: 2rem 1.5rem;
+            }
+            
+            .logo {
+                font-size: 1.5rem;
+            }
+            
+            .login-box h2 {
+                font-size: 1.3rem;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="login-container">
         <div class="login-box">
-            <div class="logo">🏨 México Destination Club</div>
+            <div class="logo">
+                🏨 México Destination Club
+            </div>
             <h2>Bienvenido</h2>
             <p>Por favor, inicia sesión para continuar</p>
+            
             <form id="loginForm">
                 <div class="input-group">
                     <label for="email">Correo Electrónico</label>
-                    <input type="email" id="email" required>
+                    <input type="email" id="email" required autocomplete="email">
                 </div>
+                
                 <div class="input-group">
                     <label for="password">Contraseña</label>
-                    <input type="password" id="password" required>
+                    <input type="password" id="password" required autocomplete="current-password">
                 </div>
-                <button type="submit" id="loginButton">Entrar</button>
-                <p id="errorMessage" class="error-message"></p>
+                
+                <button type="submit" id="loginButton">
+                    <span id="buttonText">Entrar</span>
+                    <div class="loading" id="loading"></div>
+                </button>
+                
+                <div id="errorMessage" class="error-message"></div>
+                <div id="successMessage" class="success-message"></div>
             </form>
         </div>
     </div>
 
     <script>
-        // JavaScript para el Login, ahora dentro del HTML
-        document.addEventListener('DOMContentLoaded', () => {
-            const SUPABASE_URL = 'https://depkkpxkbpgbvzylcdcn.supabase.co';
-            const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRlcGtrcHhrYnBnYnZ6eWxjZGNuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgzNzEzNjgsImV4cCI6MjA3Mzk0NzM2OH0.n8CDtIA-If4dSjLuRRG5N0y1IolPSMx44qD7Y3odV28';
-            const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY );
+        // Configuración de Supabase
+        const SUPABASE_URL = 'https://depkkpxkbpgbvzylcdcn.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRlcGtrcHhrYnBnYnZ6eWxjZGNuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgzNzEzNjgsImV4cCI6MjA3Mzk0NzM2OH0.n8CDtIA-If4dSjLuRRG5N0y1IolPSMx44qD7Y3odV28';
+        
+        // Inicializar cliente de Supabase
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-            const loginForm = document.getElementById('loginForm');
-            const errorMessage = document.getElementById('errorMessage');
+        // Elementos del DOM
+        const loginForm = document.getElementById('loginForm');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const loginButton = document.getElementById('loginButton');
+        const buttonText = document.getElementById('buttonText');
+        const loading = document.getElementById('loading');
+        const errorMessage = document.getElementById('errorMessage');
+        const successMessage = document.getElementById('successMessage');
 
-            loginForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                errorMessage.textContent = '';
+        // Funciones de utilidad
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.classList.add('show');
+            successMessage.classList.remove('show');
+        }
+
+        function showSuccess(message) {
+            successMessage.textContent = message;
+            successMessage.classList.add('show');
+            errorMessage.classList.remove('show');
+        }
+
+        function hideMessages() {
+            errorMessage.classList.remove('show');
+            successMessage.classList.remove('show');
+        }
+
+        function setLoading(isLoading) {
+            if (isLoading) {
+                loginButton.disabled = true;
+                buttonText.style.opacity = '0';
+                loading.style.display = 'block';
+            } else {
+                loginButton.disabled = false;
+                buttonText.style.opacity = '1';
+                loading.style.display = 'none';
+            }
+        }
+
+        function clearInputErrors() {
+            emailInput.classList.remove('error');
+            passwordInput.classList.remove('error');
+        }
+
+        function validateForm() {
+            let isValid = true;
+            clearInputErrors();
+
+            if (!emailInput.value.trim()) {
+                emailInput.classList.add('error');
+                isValid = false;
+            }
+
+            if (!passwordInput.value.trim()) {
+                passwordInput.classList.add('error');
+                isValid = false;
+            }
+
+            return isValid;
+        }
+
+        // Verificar si ya hay una sesión activa
+        function checkExistingSession() {
+            const userSession = localStorage.getItem('userSession');
+            if (userSession) {
                 try {
-                    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-                        email: document.getElementById('email').value,
-                        password: document.getElementById('password').value,
-                    });
-                    if (authError) throw authError;
-
-                    const { data: profileData, error: profileError } = await supabase
-                        .from('user_profiles')
-                        .select('role, full_name')
-                        .eq('user_id', authData.user.id)
-                        .single();
-                    
-                    if (profileError || !profileData) {
-                        throw new Error('Este usuario no tiene un perfil asignado.');
-                    }
-
-                    const sessionData = {
-                        id: authData.user.id,
-                        email: authData.user.email,
-                        role: profileData.role,
-                        full_name: profileData.full_name
-                    };
-                    localStorage.setItem('userSession', JSON.stringify(sessionData));
-
-                    if (profileData.role === 'admin') {
+                    const sessionData = JSON.parse(userSession);
+                    if (sessionData.role === 'admin') {
                         window.location.href = 'admin.html';
-                    } else {
-                        // Aquí iría la redirección para el roomboy
-                        alert('Login de Room Boy exitoso. Página en construcción.');
+                    } else if (sessionData.role === 'roomboy') {
+                        window.location.href = 'roomboy-app.html';
                     }
                 } catch (error) {
-                    errorMessage.textContent = error.message;
+                    localStorage.removeItem('userSession');
                 }
-            });
+            }
+        }
+
+        // Manejar el envío del formulario
+        async function handleLogin(e) {
+            e.preventDefault();
+            hideMessages();
+
+            if (!validateForm()) {
+                showError('Por favor, completa todos los campos requeridos.');
+                return;
+            }
+
+            setLoading(true);
+
+            try {
+                // Intentar autenticación
+                const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+                    email: emailInput.value.trim(),
+                    password: passwordInput.value
+                });
+
+                if (authError) {
+                    throw new Error(getErrorMessage(authError.message));
+                }
+
+                if (!authData.user) {
+                    throw new Error('Error de autenticación. Inténtalo de nuevo.');
+                }
+
+                // Obtener perfil del usuario
+                const { data: profileData, error: profileError } = await supabase
+                    .from('user_profiles')
+                    .select('role, full_name, active')
+                    .eq('user_id', authData.user.id)
+                    .single();
+
+                if (profileError) {
+                    throw new Error('Error al obtener el perfil del usuario.');
+                }
+
+                if (!profileData) {
+                    throw new Error('Este usuario no tiene un perfil asignado. Contacta al administrador.');
+                }
+
+                if (!profileData.active) {
+                    throw new Error('Tu cuenta está desactivada. Contacta al administrador.');
+                }
+
+                // Crear datos de sesión
+                const sessionData = {
+                    id: authData.user.id,
+                    email: authData.user.email,
+                    role: profileData.role,
+                    full_name: profileData.full_name,
+                    loginTime: new Date().toISOString()
+                };
+
+                // Guardar sesión
+                localStorage.setItem('userSession', JSON.stringify(sessionData));
+
+                // Mostrar mensaje de éxito
+                showSuccess('¡Inicio de sesión exitoso! Redirigiendo...');
+
+                // Redirigir según el rol
+                setTimeout(() => {
+                    if (profileData.role === 'admin') {
+                        window.location.href = 'admin.html';
+                    } else if (profileData.role === 'roomboy') {
+                        window.location.href = 'roomboy-app.html';
+                    } else {
+                        throw new Error('Rol de usuario no reconocido.');
+                    }
+                }, 1500);
+
+            } catch (error) {
+                console.error('Error de login:', error);
+                showError(error.message);
+                setLoading(false);
+            }
+        }
+
+        // Obtener mensaje de error amigable
+        function getErrorMessage(errorMessage) {
+            if (errorMessage.includes('Invalid login credentials')) {
+                return 'Credenciales incorrectas. Verifica tu email y contraseña.';
+            }
+            if (errorMessage.includes('Email not confirmed')) {
+                return 'Por favor, confirma tu email antes de iniciar sesión.';
+            }
+            if (errorMessage.includes('Too many requests')) {
+                return 'Demasiados intentos. Espera unos minutos antes de intentar de nuevo.';
+            }
+            if (errorMessage.includes('Network')) {
+                return 'Error de conexión. Verifica tu internet e inténtalo de nuevo.';
+            }
+            return errorMessage || 'Error desconocido. Inténtalo de nuevo.';
+        }
+
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            checkExistingSession();
+            loginForm.addEventListener('submit', handleLogin);
+            
+            // Limpiar errores al escribir
+            emailInput.addEventListener('input', clearInputErrors);
+            passwordInput.addEventListener('input', clearInputErrors);
+        });
+
+        // Manejar errores de red
+        window.addEventListener('online', () => {
+            hideMessages();
+        });
+
+        window.addEventListener('offline', () => {
+            showError('Sin conexión a internet. Verifica tu conexión.');
         });
     </script>
 </body>
 </html>
+

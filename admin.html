@@ -7,176 +7,1112 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        /* CSS COMPLETO Y FUNCIONAL */
+        /* Variables CSS */
         :root {
-            --primary-color: #E91E63; --secondary-color: #3f51b5; --background-color: #f4f7fc;
-            --card-background: #ffffff; --text-color: #333; --text-light: #666;
-            --border-color: #e0e0e0; --shadow: 0 4px 20px rgba(0, 0, 0, 0.08 );
+            --primary-color: #E91E63;
+            --secondary-color: #3f51b5;
+            --success-color: #4CAF50;
+            --warning-color: #FF9800;
+            --danger-color: #F44336;
+            --background-color: #f4f7fc;
+            --card-background: #ffffff;
+            --text-color: #333;
+            --text-light: #666;
+            --border-color: #e0e0e0;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            --shadow-hover: 0 8px 30px rgba(0, 0, 0, 0.12);
         }
-        body { background-color: var(--background-color); font-family: 'Segoe UI', sans-serif; margin: 0; }
-        .admin-container { max-width: 1600px; margin: 2rem auto; padding: 0 2rem; }
-        .admin-header { background: var(--card-background); padding: 1.5rem 2rem; border-radius: 15px; box-shadow: var(--shadow); margin-bottom: 2rem; }
-        .header-content { display: flex; justify-content: space-between; align-items: center; }
-        .logo-section h1 { color: var(--primary-color); font-size: 1.8rem; margin: 0; }
-        .logo-section p { color: var(--text-light); margin: 0; }
-        .user-info { display: flex; align-items: center; gap: 1.5rem; }
-        .logout-btn { background: transparent; border: 2px solid var(--primary-color); color: var(--primary-color); padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; transition: all 0.3s; }
-        .logout-btn:hover { background: var(--primary-color); color: white; }
-        .admin-nav { display: flex; gap: 0.5rem; margin-bottom: 2rem; }
-        .nav-tab { padding: 0.8rem 1.5rem; border: none; background: var(--card-background); color: var(--text-light); font-size: 1rem; font-weight: 600; border-radius: 10px 10px 0 0; cursor: pointer; border-bottom: 3px solid transparent; }
-        .nav-tab.active { color: var(--primary-color); border-bottom: 3px solid var(--primary-color); }
-        .admin-content .tab-content { display: none; }
-        .admin-content .tab-content.active { display: block; }
-        .tab-content h2 { font-size: 1.5rem; margin-bottom: 1.5rem; color: var(--secondary-color); }
-        .charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 2rem; }
-        .chart-container { background: var(--card-background); padding: 2rem; border-radius: 15px; box-shadow: var(--shadow); }
-        .gallery-filters { background: var(--card-background); padding: 1.5rem; border-radius: 15px; margin-bottom: 2rem; display: flex; flex-wrap: wrap; align-items: center; gap: 1.5rem; box-shadow: var(--shadow); }
-        .filter-group { display: flex; flex-direction: column; gap: 0.5rem; }
-        .filter-group label { font-size: 0.9rem; font-weight: 600; color: var(--text-light); }
-        .filter-group select, .filter-group input { padding: 0.6rem; border: 1px solid var(--border-color); border-radius: 8px; font-size: 1rem; }
-        .btn-primary, .btn-secondary { padding: 0.7rem 1.5rem; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; border: none; transition: all 0.3s; align-self: flex-end; }
-        .btn-primary { background-color: var(--primary-color); color: white; }
-        .btn-secondary { background-color: #e0e0e0; color: var(--text-color); }
-        .photo-gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; }
-        .photo-card { background: var(--card-background); border-radius: 15px; overflow: hidden; box-shadow: var(--shadow); }
-        .photo-card img { width: 100%; height: 200px; object-fit: cover; cursor: pointer; }
-        .photo-details { padding: 1rem; }
-        .status-label { padding: 0.2rem 0.6rem; border-radius: 12px; font-size: 0.8rem; font-weight: 600; color: white; text-transform: capitalize; }
-        .status-approved { background-color: #4CAF50; } .status-pending { background-color: #FF9800; } .status-rejected { background-color: #F44336; }
+
+        /* Reset y estilos base */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--background-color);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+        }
+
+        /* Contenedor principal */
+        .admin-container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Header */
+        .admin-header {
+            background: var(--card-background);
+            padding: 1.5rem 2rem;
+            border-radius: 15px;
+            box-shadow: var(--shadow);
+            margin-bottom: 2rem;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .logo-section h1 {
+            color: var(--primary-color);
+            font-size: 1.8rem;
+            margin-bottom: 0.2rem;
+        }
+
+        .logo-section p {
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .user-name {
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        .logout-btn {
+            background: transparent;
+            border: 2px solid var(--primary-color);
+            color: var(--primary-color);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .logout-btn:hover {
+            background: var(--primary-color);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        /* Navegación */
+        .admin-nav {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            overflow-x: auto;
+        }
+
+        .nav-tab {
+            padding: 0.8rem 1.5rem;
+            border: none;
+            background: var(--card-background);
+            color: var(--text-light);
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 10px 10px 0 0;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .nav-tab:hover {
+            color: var(--primary-color);
+        }
+
+        .nav-tab.active {
+            color: var(--primary-color);
+            border-bottom: 3px solid var(--primary-color);
+            background: white;
+        }
+
+        /* Contenido de pestañas */
+        .admin-content .tab-content {
+            display: none;
+        }
+
+        .admin-content .tab-content.active {
+            display: block;
+        }
+
+        .tab-content h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            color: var(--secondary-color);
+        }
+
+        /* Dashboard */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--card-background);
+            padding: 1.5rem;
+            border-radius: 15px;
+            box-shadow: var(--shadow);
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+
+        .stat-card.success .stat-number { color: var(--success-color); }
+        .stat-card.warning .stat-number { color: var(--warning-color); }
+        .stat-card.danger .stat-number { color: var(--danger-color); }
+        .stat-card.primary .stat-number { color: var(--primary-color); }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            gap: 2rem;
+        }
+
+        .chart-container {
+            background: var(--card-background);
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: var(--shadow);
+        }
+
+        .chart-container h3 {
+            margin-bottom: 1rem;
+            color: var(--text-color);
+            font-size: 1.2rem;
+        }
+
+        /* Galería */
+        .gallery-filters {
+            background: var(--card-background);
+            padding: 1.5rem;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: end;
+            gap: 1.5rem;
+            box-shadow: var(--shadow);
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            min-width: 150px;
+        }
+
+        .filter-group label {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-light);
+        }
+
+        .filter-group select,
+        .filter-group input {
+            padding: 0.6rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .filter-group select:focus,
+        .filter-group input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .btn-primary,
+        .btn-secondary,
+        .btn-success,
+        .btn-danger {
+            padding: 0.7rem 1.5rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #c2185b;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background-color: #e0e0e0;
+            color: var(--text-color);
+        }
+
+        .btn-secondary:hover {
+            background-color: #d0d0d0;
+        }
+
+        .btn-success {
+            background-color: var(--success-color);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background-color: #45a049;
+        }
+
+        .btn-danger {
+            background-color: var(--danger-color);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #da190b;
+        }
+
+        .photo-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .photo-card {
+            background: var(--card-background);
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            transition: transform 0.3s ease;
+        }
+
+        .photo-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .photo-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .photo-card img:hover {
+            transform: scale(1.05);
+        }
+
+        .photo-details {
+            padding: 1rem;
+        }
+
+        .photo-meta {
+            margin-bottom: 1rem;
+        }
+
+        .photo-meta p {
+            margin-bottom: 0.3rem;
+            font-size: 0.9rem;
+        }
+
+        .status-label {
+            padding: 0.3rem 0.8rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: white;
+            text-transform: capitalize;
+            display: inline-block;
+        }
+
+        .status-approved { background-color: var(--success-color); }
+        .status-pending { background-color: var(--warning-color); }
+        .status-rejected { background-color: var(--danger-color); }
+
+        .photo-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .photo-actions button {
+            flex: 1;
+            padding: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        /* Loading y mensajes */
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-light);
+        }
+
+        .error-message {
+            background: #ffebee;
+            color: var(--danger-color);
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            border-left: 4px solid var(--danger-color);
+        }
+
+        .success-message {
+            background: #e8f5e8;
+            color: var(--success-color);
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            border-left: 4px solid var(--success-color);
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+        }
+
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            max-width: 90%;
+            max-height: 90%;
+        }
+
+        .modal-content img {
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: 10px;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 25px;
+            color: white;
+            font-size: 35px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .admin-container {
+                padding: 1rem;
+            }
+
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .gallery-filters {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .filter-group {
+                min-width: auto;
+            }
+
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .photo-gallery {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="admin-container">
+        <!-- Header -->
         <header class="admin-header">
             <div class="header-content">
-                <div class="logo-section"><h1>🏨 México Destination Club</h1><p>Panel Administrativo</p></div>
-                <div class="user-info"><span id="adminName">Admin</span><button id="logoutButton" class="logout-btn">🚪 Salir</button></div>
+                <div class="logo-section">
+                    <h1>🏨 México Destination Club</h1>
+                    <p>Panel Administrativo</p>
+                </div>
+                <div class="user-info">
+                    <span id="adminName" class="user-name">Cargando...</span>
+                    <button id="logoutButton" class="logout-btn">🚪 Salir</button>
+                </div>
             </div>
         </header>
+
+        <!-- Navegación -->
         <nav class="admin-nav">
             <button class="nav-tab active" data-tab="dashboard">📊 Dashboard</button>
             <button class="nav-tab" data-tab="gallery">📸 Galería</button>
+            <button class="nav-tab" data-tab="employees">👥 Empleados</button>
         </nav>
+
+        <!-- Contenido principal -->
         <main class="admin-content">
+            <!-- Dashboard -->
             <div id="dashboard-content" class="tab-content active">
                 <h2>Dashboard Principal</h2>
+                
+                <!-- Estadísticas -->
+                <div class="stats-grid">
+                    <div class="stat-card primary">
+                        <div class="stat-number" id="totalPhotos">0</div>
+                        <div class="stat-label">Total de Fotos</div>
+                    </div>
+                    <div class="stat-card success">
+                        <div class="stat-number" id="approvedPhotos">0</div>
+                        <div class="stat-label">Fotos Aprobadas</div>
+                    </div>
+                    <div class="stat-card warning">
+                        <div class="stat-number" id="pendingPhotos">0</div>
+                        <div class="stat-label">Fotos Pendientes</div>
+                    </div>
+                    <div class="stat-card danger">
+                        <div class="stat-number" id="rejectedPhotos">0</div>
+                        <div class="stat-label">Fotos Rechazadas</div>
+                    </div>
+                </div>
+
+                <!-- Gráficas -->
                 <div class="charts-grid">
-                    <div class="chart-container"><h3>📈 Cumplimiento Diario (Ejemplo)</h3><canvas id="dailyComplianceChart"></canvas></div>
+                    <div class="chart-container">
+                        <h3>📈 Fotos por Día (Últimos 7 días)</h3>
+                        <canvas id="dailyPhotosChart"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <h3>📊 Estado de las Fotos</h3>
+                        <canvas id="statusChart"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <h3>👥 Cumplimiento por Empleado</h3>
+                        <canvas id="employeeChart"></canvas>
+                    </div>
                 </div>
             </div>
+
+            <!-- Galería -->
             <div id="gallery-content" class="tab-content">
                 <h2>Galería de Fotos</h2>
+                
+                <!-- Filtros -->
                 <div class="gallery-filters">
-                    <div class="filter-group"><label for="employeeFilter">Empleado:</label><select id="employeeFilter"><option value="all">Todos</option></select></div>
-                    <div class="filter-group"><label for="startDate">Desde:</label><input type="date" id="startDate"></div>
-                    <div class="filter-group"><label for="endDate">Hasta:</label><input type="date" id="endDate"></div>
-                    <button id="applyFiltersBtn" class="btn-primary">🔍 Aplicar</button>
-                    <button id="clearFiltersBtn" class="btn-secondary">Limpiar</button>
+                    <div class="filter-group">
+                        <label for="employeeFilter">Empleado:</label>
+                        <select id="employeeFilter">
+                            <option value="all">Todos los empleados</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="statusFilter">Estado:</label>
+                        <select id="statusFilter">
+                            <option value="all">Todos los estados</option>
+                            <option value="pending">Pendientes</option>
+                            <option value="approved">Aprobadas</option>
+                            <option value="rejected">Rechazadas</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="startDate">Desde:</label>
+                        <input type="date" id="startDate">
+                    </div>
+                    <div class="filter-group">
+                        <label for="endDate">Hasta:</label>
+                        <input type="date" id="endDate">
+                    </div>
+                    <button id="applyFiltersBtn" class="btn-primary">🔍 Aplicar Filtros</button>
+                    <button id="clearFiltersBtn" class="btn-secondary">🗑️ Limpiar</button>
                 </div>
-                <div id="photoGallery" class="photo-gallery"><p>Cargando...</p></div>
+
+                <!-- Galería de fotos -->
+                <div id="photoGallery" class="photo-gallery">
+                    <div class="loading">Cargando fotos...</div>
+                </div>
+            </div>
+
+            <!-- Empleados -->
+            <div id="employees-content" class="tab-content">
+                <h2>Gestión de Empleados</h2>
+                <div id="employeesList" class="loading">Cargando empleados...</div>
             </div>
         </main>
     </div>
 
-    <script>
-        // JAVASCRIPT COMPLETO Y FUNCIONAL
-        document.addEventListener('DOMContentLoaded', () => {
-            const SUPABASE_URL = 'https://depkkpxkbpgbvzylcdcn.supabase.co';
-            const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRlcGtrcHhrYnBnYnZ6eWxjZGNuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgzNzEzNjgsImV4cCI6MjA3Mzk0NzM2OH0.n8CDtIA-If4dSjLuRRG5N0y1IolPSMx44qD7Y3odV28';
-            const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY );
+    <!-- Modal para ver fotos -->
+    <div id="photoModal" class="modal">
+        <span class="close-modal">&times;</span>
+        <div class="modal-content">
+            <img id="modalImage" src="" alt="Foto ampliada">
+        </div>
+    </div>
 
-            // --- Autenticación y Sesión ---
+    <script>
+        // Configuración de Supabase
+        const SUPABASE_URL = 'https://depkkpxkbpgbvzylcdcn.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRlcGtrcHhrYnBnYnZ6eWxjZGNuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgzNzEzNjgsImV4cCI6MjA3Mzk0NzM2OH0.n8CDtIA-If4dSjLuRRG5N0y1IolPSMx44qD7Y3odV28';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // Variables globales
+        let currentUser = null;
+        let allPhotos = [];
+        let allEmployees = [];
+
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Verificar autenticación
+            if (!checkAuthentication()) return;
+
+            // Configurar navegación
+            setupNavigation();
+
+            // Configurar modal
+            setupModal();
+
+            // Cargar datos iniciales
+            await loadInitialData();
+
+            // Configurar event listeners
+            setupEventListeners();
+        });
+
+        // Verificar autenticación
+        function checkAuthentication() {
             const session = localStorage.getItem('userSession');
-            if (!session) { window.location.href = 'index.html'; return; }
-            const currentUser = JSON.parse(session);
-            document.getElementById('adminName').textContent = currentUser.full_name || 'Admin';
-            document.getElementById('logoutButton').addEventListener('click', () => {
+            if (!session) {
+                window.location.href = 'index.html';
+                return false;
+            }
+
+            try {
+                currentUser = JSON.parse(session);
+                if (currentUser.role !== 'admin') {
+                    alert('Acceso denegado. Solo los administradores pueden acceder a este panel.');
+                    window.location.href = 'index.html';
+                    return false;
+                }
+
+                document.getElementById('adminName').textContent = currentUser.full_name || 'Administrador';
+                return true;
+            } catch (error) {
                 localStorage.removeItem('userSession');
                 window.location.href = 'index.html';
-            });
+                return false;
+            }
+        }
 
-            // --- Navegación por Pestañas ---
+        // Configurar navegación por pestañas
+        function setupNavigation() {
             const tabs = document.querySelectorAll('.nav-tab');
             const tabContents = document.querySelectorAll('.tab-content');
+
             tabs.forEach(tab => {
                 tab.addEventListener('click', () => {
+                    // Remover clase active de todas las pestañas
                     tabs.forEach(t => t.classList.remove('active'));
-                    tab.classList.add('active');
                     tabContents.forEach(c => c.classList.remove('active'));
+
+                    // Activar pestaña seleccionada
+                    tab.classList.add('active');
                     document.getElementById(`${tab.dataset.tab}-content`).classList.add('active');
-                    if (tab.dataset.tab === 'gallery') { loadGalleryPhotos(); populateEmployeeFilter(); }
-                    if (tab.dataset.tab === 'dashboard') { loadDashboardCharts(); }
+
+                    // Cargar contenido específico
+                    switch (tab.dataset.tab) {
+                        case 'dashboard':
+                            loadDashboard();
+                            break;
+                        case 'gallery':
+                            loadGallery();
+                            break;
+                        case 'employees':
+                            loadEmployees();
+                            break;
+                    }
                 });
             });
+        }
 
-            // --- Lógica de la Galería ---
-            const gallery = document.getElementById('photoGallery');
+        // Configurar modal
+        function setupModal() {
+            const modal = document.getElementById('photoModal');
+            const closeBtn = document.querySelector('.close-modal');
+
+            closeBtn.addEventListener('click', () => {
+                modal.style.display = 'none';
+            });
+
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+        }
+
+        // Cargar datos iniciales
+        async function loadInitialData() {
+            try {
+                await Promise.all([
+                    loadPhotos(),
+                    loadEmployees(),
+                    loadDashboard()
+                ]);
+            } catch (error) {
+                console.error('Error cargando datos iniciales:', error);
+                showError('Error al cargar los datos iniciales');
+            }
+        }
+
+        // Cargar fotos
+        async function loadPhotos() {
+            try {
+                const { data, error } = await supabase
+                    .from('task_photos')
+                    .select(`
+                        *,
+                        user_profiles(full_name, role)
+                    `)
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+                allPhotos = data || [];
+                return allPhotos;
+            } catch (error) {
+                console.error('Error cargando fotos:', error);
+                throw error;
+            }
+        }
+
+        // Cargar empleados
+        async function loadEmployees() {
+            try {
+                const { data, error } = await supabase
+                    .from('user_profiles')
+                    .select('*')
+                    .eq('role', 'roomboy')
+                    .order('full_name');
+
+                if (error) throw error;
+                allEmployees = data || [];
+                populateEmployeeFilter();
+                return allEmployees;
+            } catch (error) {
+                console.error('Error cargando empleados:', error);
+                throw error;
+            }
+        }
+
+        // Poblar filtro de empleados
+        function populateEmployeeFilter() {
             const employeeFilter = document.getElementById('employeeFilter');
-            const startDateInput = document.getElementById('startDate');
-            const endDateInput = document.getElementById('endDate');
-            const applyFiltersBtn = document.getElementById('applyFiltersBtn');
-            const clearFiltersBtn = document.getElementById('clearFiltersBtn');
+            
+            // Limpiar opciones existentes (excepto "Todos")
+            while (employeeFilter.children.length > 1) {
+                employeeFilter.removeChild(employeeFilter.lastChild);
+            }
 
-            async function loadGalleryPhotos() {
-                gallery.innerHTML = '<p>Cargando fotos...</p>';
-                try {
-                    let query = supabase.from('task_photos').select(`*, user_profiles(full_name)`).order('created_at', { ascending: false });
-                    if (employeeFilter.value !== 'all') query = query.eq('user_id', employeeFilter.value);
-                    if (startDateInput.value) query = query.gte('created_at', new Date(startDateInput.value).toISOString());
-                    if (endDateInput.value) {
-                        const end = new Date(endDateInput.value); end.setDate(end.getDate() + 1);
-                        query = query.lt('created_at', end.toISOString());
+            // Agregar empleados
+            allEmployees.forEach(employee => {
+                const option = document.createElement('option');
+                option.value = employee.user_id;
+                option.textContent = employee.full_name;
+                employeeFilter.appendChild(option);
+            });
+        }
+
+        // Cargar dashboard
+        async function loadDashboard() {
+            try {
+                // Actualizar estadísticas
+                updateStats();
+
+                // Cargar gráficas
+                await loadCharts();
+            } catch (error) {
+                console.error('Error cargando dashboard:', error);
+                showError('Error al cargar el dashboard');
+            }
+        }
+
+        // Actualizar estadísticas
+        function updateStats() {
+            const total = allPhotos.length;
+            const approved = allPhotos.filter(p => p.status === 'approved').length;
+            const pending = allPhotos.filter(p => p.status === 'pending' || !p.status).length;
+            const rejected = allPhotos.filter(p => p.status === 'rejected').length;
+
+            document.getElementById('totalPhotos').textContent = total;
+            document.getElementById('approvedPhotos').textContent = approved;
+            document.getElementById('pendingPhotos').textContent = pending;
+            document.getElementById('rejectedPhotos').textContent = rejected;
+        }
+
+        // Cargar gráficas
+        async function loadCharts() {
+            loadDailyPhotosChart();
+            loadStatusChart();
+            loadEmployeeChart();
+        }
+
+        // Gráfica de fotos por día
+        function loadDailyPhotosChart() {
+            const ctx = document.getElementById('dailyPhotosChart').getContext('2d');
+            
+            // Obtener últimos 7 días
+            const last7Days = [];
+            const photoCounts = [];
+            
+            for (let i = 6; i >= 0; i--) {
+                const date = new Date();
+                date.setDate(date.getDate() - i);
+                const dateStr = date.toISOString().split('T')[0];
+                
+                last7Days.push(date.toLocaleDateString('es-ES', { weekday: 'short' }));
+                
+                const count = allPhotos.filter(photo => {
+                    const photoDate = new Date(photo.created_at).toISOString().split('T')[0];
+                    return photoDate === dateStr;
+                }).length;
+                
+                photoCounts.push(count);
+            }
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: last7Days,
+                    datasets: [{
+                        label: 'Fotos Subidas',
+                        data: photoCounts,
+                        borderColor: '#E91E63',
+                        backgroundColor: 'rgba(233, 30, 99, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
                     }
-                    const { data, error } = await query.limit(100);
-                    if (error) throw error;
-                    if (data.length === 0) { gallery.innerHTML = '<p>No se encontraron fotos con los filtros seleccionados.</p>'; return; }
-                    gallery.innerHTML = data.map(photo => `
-                        <div class="photo-card">
-                            <img src="${photo.photo_url}" alt="Foto" onclick="window.open('${photo.photo_url}', '_blank')">
-                            <div class="photo-details">
-                                <p><strong>Empleado:</strong> ${photo.user_profiles ? photo.user_profiles.full_name : 'Desconocido'}</p>
-                                <p><strong>Fecha:</strong> ${new Date(photo.created_at).toLocaleString()}</p>
-                                <p><strong>Estado:</strong> <span class="status-label status-${photo.status || 'pending'}">${photo.status || 'pendiente'}</span></p>
+                }
+            });
+        }
+
+        // Gráfica de estado de fotos
+        function loadStatusChart() {
+            const ctx = document.getElementById('statusChart').getContext('2d');
+            
+            const approved = allPhotos.filter(p => p.status === 'approved').length;
+            const pending = allPhotos.filter(p => p.status === 'pending' || !p.status).length;
+            const rejected = allPhotos.filter(p => p.status === 'rejected').length;
+
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Aprobadas', 'Pendientes', 'Rechazadas'],
+                    datasets: [{
+                        data: [approved, pending, rejected],
+                        backgroundColor: ['#4CAF50', '#FF9800', '#F44336'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        // Gráfica de cumplimiento por empleado
+        function loadEmployeeChart() {
+            const ctx = document.getElementById('employeeChart').getContext('2d');
+            
+            const employeeData = allEmployees.map(employee => {
+                const employeePhotos = allPhotos.filter(p => p.user_id === employee.user_id);
+                return {
+                    name: employee.full_name,
+                    count: employeePhotos.length
+                };
+            }).sort((a, b) => b.count - a.count);
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: employeeData.map(e => e.name),
+                    datasets: [{
+                        label: 'Fotos Subidas',
+                        data: employeeData.map(e => e.count),
+                        backgroundColor: '#E91E63',
+                        borderRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Cargar galería
+        function loadGallery() {
+            displayPhotos(allPhotos);
+        }
+
+        // Mostrar fotos
+        function displayPhotos(photos) {
+            const gallery = document.getElementById('photoGallery');
+            
+            if (photos.length === 0) {
+                gallery.innerHTML = '<div class="loading">No se encontraron fotos con los filtros seleccionados.</div>';
+                return;
+            }
+
+            gallery.innerHTML = photos.map(photo => `
+                <div class="photo-card">
+                    <img src="${photo.photo_url}" alt="Foto de trabajo" onclick="openModal('${photo.photo_url}')">
+                    <div class="photo-details">
+                        <div class="photo-meta">
+                            <p><strong>Empleado:</strong> ${photo.user_profiles?.full_name || 'Desconocido'}</p>
+                            <p><strong>Fecha:</strong> ${new Date(photo.created_at).toLocaleString('es-ES')}</p>
+                            <p><strong>Estado:</strong> <span class="status-label status-${photo.status || 'pending'}">${getStatusText(photo.status)}</span></p>
+                        </div>
+                        ${photo.status === 'pending' || !photo.status ? `
+                            <div class="photo-actions">
+                                <button class="btn-success" onclick="updatePhotoStatus('${photo.id}', 'approved')">✓ Aprobar</button>
+                                <button class="btn-danger" onclick="updatePhotoStatus('${photo.id}', 'rejected')">✗ Rechazar</button>
                             </div>
-                        </div>`).join('');
-                } catch (error) { gallery.innerHTML = '<p style="color: red;">Error al cargar las fotos.</p>'; }
+                        ` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Obtener texto del estado
+        function getStatusText(status) {
+            switch (status) {
+                case 'approved': return 'Aprobada';
+                case 'rejected': return 'Rechazada';
+                default: return 'Pendiente';
+            }
+        }
+
+        // Abrir modal de foto
+        function openModal(imageUrl) {
+            const modal = document.getElementById('photoModal');
+            const modalImage = document.getElementById('modalImage');
+            
+            modalImage.src = imageUrl;
+            modal.style.display = 'block';
+        }
+
+        // Actualizar estado de foto
+        async function updatePhotoStatus(photoId, status) {
+            try {
+                const { error } = await supabase
+                    .from('task_photos')
+                    .update({ 
+                        status: status,
+                        reviewed_at: new Date().toISOString(),
+                        reviewed_by: currentUser.id
+                    })
+                    .eq('id', photoId);
+
+                if (error) throw error;
+
+                // Actualizar datos locales
+                const photoIndex = allPhotos.findIndex(p => p.id === photoId);
+                if (photoIndex !== -1) {
+                    allPhotos[photoIndex].status = status;
+                }
+
+                // Recargar vista actual
+                const activeTab = document.querySelector('.nav-tab.active').dataset.tab;
+                if (activeTab === 'gallery') {
+                    applyFilters();
+                } else if (activeTab === 'dashboard') {
+                    loadDashboard();
+                }
+
+                showSuccess(`Foto ${status === 'approved' ? 'aprobada' : 'rechazada'} correctamente`);
+            } catch (error) {
+                console.error('Error actualizando estado:', error);
+                showError('Error al actualizar el estado de la foto');
+            }
+        }
+
+        // Aplicar filtros
+        function applyFilters() {
+            const employeeFilter = document.getElementById('employeeFilter').value;
+            const statusFilter = document.getElementById('statusFilter').value;
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+
+            let filteredPhotos = [...allPhotos];
+
+            // Filtrar por empleado
+            if (employeeFilter !== 'all') {
+                filteredPhotos = filteredPhotos.filter(p => p.user_id === employeeFilter);
             }
 
-            async function populateEmployeeFilter() {
-                if (employeeFilter.options.length > 1) return;
-                try {
-                    const { data, error } = await supabase.from('user_profiles').select('user_id, full_name').eq('role', 'roomboy').order('full_name');
-                    if (error) throw error;
-                    data.forEach(emp => {
-                        const option = document.createElement('option');
-                        option.value = emp.user_id;
-                        option.textContent = emp.full_name;
-                        employeeFilter.appendChild(option);
-                    });
-                } catch (error) { console.error('Error cargando empleados:', error); }
+            // Filtrar por estado
+            if (statusFilter !== 'all') {
+                filteredPhotos = filteredPhotos.filter(p => (p.status || 'pending') === statusFilter);
             }
 
-            applyFiltersBtn.addEventListener('click', loadGalleryPhotos);
-            clearFiltersBtn.addEventListener('click', () => {
-                employeeFilter.value = 'all'; startDateInput.value = ''; endDateInput.value = '';
-                loadGalleryPhotos();
+            // Filtrar por fecha de inicio
+            if (startDate) {
+                const start = new Date(startDate);
+                filteredPhotos = filteredPhotos.filter(p => new Date(p.created_at) >= start);
+            }
+
+            // Filtrar por fecha de fin
+            if (endDate) {
+                const end = new Date(endDate);
+                end.setDate(end.getDate() + 1); // Incluir todo el día
+                filteredPhotos = filteredPhotos.filter(p => new Date(p.created_at) < end);
+            }
+
+            displayPhotos(filteredPhotos);
+        }
+
+        // Limpiar filtros
+        function clearFilters() {
+            document.getElementById('employeeFilter').value = 'all';
+            document.getElementById('statusFilter').value = 'all';
+            document.getElementById('startDate').value = '';
+            document.getElementById('endDate').value = '';
+            displayPhotos(allPhotos);
+        }
+
+        // Cargar empleados
+        function loadEmployees() {
+            const employeesList = document.getElementById('employeesList');
+            
+            if (allEmployees.length === 0) {
+                employeesList.innerHTML = '<div class="loading">No hay empleados registrados.</div>';
+                return;
+            }
+
+            employeesList.innerHTML = `
+                <div class="stats-grid">
+                    ${allEmployees.map(employee => {
+                        const employeePhotos = allPhotos.filter(p => p.user_id === employee.user_id);
+                        const approved = employeePhotos.filter(p => p.status === 'approved').length;
+                        const total = employeePhotos.length;
+                        const percentage = total > 0 ? Math.round((approved / total) * 100) : 0;
+                        
+                        return `
+                            <div class="stat-card">
+                                <h3>${employee.full_name}</h3>
+                                <div class="stat-number ${percentage >= 80 ? 'success' : percentage >= 60 ? 'warning' : 'danger'}">${percentage}%</div>
+                                <div class="stat-label">Cumplimiento (${approved}/${total})</div>
+                                <p style="margin-top: 0.5rem; font-size: 0.9rem; color: var(--text-light);">
+                                    Email: ${employee.email || 'No disponible'}
+                                </p>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+        }
+
+        // Configurar event listeners
+        function setupEventListeners() {
+            // Logout
+            document.getElementById('logoutButton').addEventListener('click', () => {
+                if (confirm('¿Estás seguro de que quieres cerrar sesión?')) {
+                    localStorage.removeItem('userSession');
+                    window.location.href = 'index.html';
+                }
             });
 
-            // --- Lógica del Dashboard ---
-            function loadDashboardCharts() {
-                const ctx = document.getElementById('dailyComplianceChart').getContext('2d');
-                new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        labels: ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'],
-                        datasets: [{ label: 'Fotos Subidas (Ejemplo)', data: [12, 19, 3, 5, 2, 3, 9], borderColor: '#E91E63', tension: 0.1 }]
-                    }
-                });
-            }
-            
-            // --- Carga Inicial ---
-            loadDashboardCharts();
-        });
+            // Filtros de galería
+            document.getElementById('applyFiltersBtn').addEventListener('click', applyFilters);
+            document.getElementById('clearFiltersBtn').addEventListener('click', clearFilters);
+
+            // Auto-aplicar filtros al cambiar
+            ['employeeFilter', 'statusFilter', 'startDate', 'endDate'].forEach(id => {
+                document.getElementById(id).addEventListener('change', applyFilters);
+            });
+        }
+
+        // Funciones de utilidad
+        function showError(message) {
+            // Implementar notificación de error
+            console.error(message);
+            alert('Error: ' + message);
+        }
+
+        function showSuccess(message) {
+            // Implementar notificación de éxito
+            console.log(message);
+            alert('Éxito: ' + message);
+        }
+
+        // Hacer funciones globales para onclick
+        window.openModal = openModal;
+        window.updatePhotoStatus = updatePhotoStatus;
     </script>
 </body>
 </html>
+
